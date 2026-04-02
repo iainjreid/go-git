@@ -45,6 +45,7 @@ const (
 	TreeObject    ObjectType = 2
 	BlobObject    ObjectType = 3
 	TagObject     ObjectType = 4
+	NoteObject    ObjectType = 5
 	// 5 reserved for future expansion
 	OFSDeltaObject ObjectType = 6
 	REFDeltaObject ObjectType = 7
@@ -62,6 +63,8 @@ func (t ObjectType) String() string {
 		return "blob"
 	case TagObject:
 		return "tag"
+	case NoteObject:
+		return "note"
 	case OFSDeltaObject:
 		return "ofs-delta"
 	case REFDeltaObject:
@@ -100,6 +103,8 @@ func ParseObjectType(value string) (typ ObjectType, err error) {
 		typ = BlobObject
 	case "tag":
 		typ = TagObject
+	case "note":
+		typ = NoteObject
 	case "ofs-delta":
 		typ = OFSDeltaObject
 	case "ref-delta":

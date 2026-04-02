@@ -24,18 +24,18 @@ var ErrUnsupportedObject = errors.New("unsupported object type")
 // Object is returned when an object can be of any type. It is frequently used
 // with a type cast to acquire the specific type of object:
 //
-//   func process(obj Object) {
-//   	switch o := obj.(type) {
-//   	case *Commit:
-//   		// o is a Commit
-//   	case *Tree:
-//   		// o is a Tree
-//   	case *Blob:
-//   		// o is a Blob
-//   	case *Tag:
-//   		// o is a Tag
-//   	}
-//   }
+//	func process(obj Object) {
+//		switch o := obj.(type) {
+//		case *Commit:
+//			// o is a Commit
+//		case *Tree:
+//			// o is a Tree
+//		case *Blob:
+//			// o is a Blob
+//		case *Tag:
+//			// o is a Tag
+//		}
+//	}
 //
 // This interface is intentionally different from plumbing.EncodedObject, which
 // is a lower level interface used by storage implementations to read and write
@@ -69,6 +69,8 @@ func DecodeObject(s storer.EncodedObjectStorer, o plumbing.EncodedObject) (Objec
 		return DecodeBlob(o)
 	case plumbing.TagObject:
 		return DecodeTag(s, o)
+	case plumbing.NoteObject:
+		return DecodeNote(s, o)
 	default:
 		return nil, plumbing.ErrInvalidType
 	}

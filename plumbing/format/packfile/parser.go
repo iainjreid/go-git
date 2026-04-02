@@ -277,8 +277,16 @@ func (p *Parser) indexObjects() error {
 		// Non delta objects needs to be added into the storage. This
 		// is only required when lazy writing is not supported.
 		if obj != nil {
-			if _, err := p.storage.SetEncodedObject(obj); err != nil {
-				return err
+			if tar, ok := p.storage.(interface {
+				BufferEncodedObject(plumbing.EncodedObject) (plumbing.Hash, error)
+			}); ok {
+				if _, err := tar.BufferEncodedObject(obj); err != nil {
+					return err
+				}
+			} else {
+				if _, err := p.storage.SetEncodedObject(obj); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -309,6 +317,10 @@ func (p *Parser) indexObjects() error {
 
 		p.oiByOffset[oh.Offset] = ota
 		p.oi[i] = ota
+	}
+
+	if obj, ok := p.storage.(interface{ Commit() error }); ok {
+		return obj.Commit()
 	}
 
 	return nil
@@ -353,6 +365,10 @@ func (p *Parser) resolveDeltas() error {
 				delete(p.deltas, obj.Offset)
 			}
 		}
+	}
+
+	if obj, ok := p.storage.(interface{ Commit() error }); ok {
+		return obj.Commit()
 	}
 
 	return nil
@@ -436,6 +452,11 @@ func (p *Parser) get(o *objectInfo, buf *bytes.Buffer) (err error) {
 		copy(data, buf.Bytes())
 		p.cache.Put(o.Offset, data)
 	}
+
+	if obj, ok := p.storage.(interface{ Commit() error }); ok {
+		return obj.Commit()
+	}
+
 	return nil
 }
 
@@ -504,8 +525,16 @@ func (p *Parser) resolveObject(
 	if obj != nil {
 		obj.SetType(o.Type)
 		obj.SetSize(o.Size()) // Size here is correct as it was populated by applyPatchBase.
-		if _, err := p.storage.SetEncodedObject(obj); err != nil {
-			return err
+		if tar, ok := p.storage.(interface {
+			BufferEncodedObject(plumbing.EncodedObject) (plumbing.Hash, error)
+		}); ok {
+			if _, err := tar.BufferEncodedObject(obj); err != nil {
+				return err
+			}
+		} else {
+			if _, err := p.storage.SetEncodedObject(obj); err != nil {
+				return err
+			}
 		}
 	}
 	return err
